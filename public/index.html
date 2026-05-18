@@ -1,0 +1,2243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Helix Biosciences | PROMAX – Higher Education & Pharma Ecosystem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --deep-teal: #0B2B38;
+            --ocean: #0B4F6C;
+            --aqua: #20A4B2;
+            --coral: #E63946;
+            --gold: #FFD966;
+            --mint: #25D366;
+            --bg-light: #F8FBFD;
+            --white: #ffffff;
+            --text-dark: #1A2C3E;
+            --text-mid: #3D5567;
+            --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.10);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.14);
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-pill: 60px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 90px;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 28px;
+        }
+        .section-spacing {
+            padding: 70px 0;
+        }
+        .section-title {
+            font-size: 2.4rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--ocean), var(--aqua));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+        .section-sub {
+            color: var(--text-mid);
+            font-size: 1.1rem;
+            margin-bottom: 35px;
+            font-weight: 500;
+        }
+        .section-badge {
+            display: inline-block;
+            background: #e0f2f5;
+            padding: 7px 18px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--ocean);
+            letter-spacing: 0.3px;
+        }
+
+        /* ========= ENHANCED SIDEBAR NAVIGATION ========= */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s;
+            backdrop-filter: blur(4px);
+        }
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .sidebar-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 400px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 3001;
+            transition: right 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+            box-shadow: -8px 0 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            border-radius: 24px 0 0 24px;
+            overflow-y: auto;
+        }
+        .sidebar-panel.open {
+            right: 0;
+        }
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--deep-teal), var(--ocean));
+            color: white;
+            padding: 24px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-radius: 24px 0 0 0;
+        }
+        .sidebar-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar-close:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(90deg);
+        }
+        .sidebar-body {
+            padding: 20px 18px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-link:hover,
+        .sidebar-link:focus {
+            background: #eaf6f9;
+            color: var(--ocean);
+            transform: translateX(6px);
+            box-shadow: 0 4px 14px rgba(32, 164, 178, 0.12);
+        }
+        .sidebar-link i {
+            width: 38px;
+            height: 38px;
+            background: #f0f7f9;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--aqua);
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .sidebar-link:hover i {
+            background: var(--aqua);
+            color: white;
+            transform: scale(1.08);
+        }
+        .sidebar-badge {
+            margin-left: auto;
+            background: var(--coral);
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            animation: pulseBadge 1.4s infinite;
+        }
+        @keyframes pulseBadge {
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 12px rgba(230, 57, 70, 0.5);
+            }
+        }
+        .sidebar-divider {
+            height: 1px;
+            background: #e8eef2;
+            margin: 8px 0;
+        }
+        .sidebar-footer {
+            padding: 16px 22px;
+            background: #f9fbfd;
+            border-top: 1px solid #eef2f5;
+            position: sticky;
+            bottom: 0;
+            border-radius: 0 0 0 24px;
+        }
+        .sidebar-social-row {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .sidebar-social-row a {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            text-decoration: none;
+            box-shadow: var(--shadow-sm);
+        }
+        .sidebar-social-row a:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .sidebar-cta-btn {
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, var(--ocean), var(--aqua));
+            color: white;
+            padding: 13px;
+            border-radius: 40px;
+            font-weight: 700;
+            text-decoration: none;
+            margin-top: 12px;
+            transition: var(--transition);
+            letter-spacing: 0.3px;
+        }
+        .sidebar-cta-btn:hover {
+            box-shadow: 0 8px 24px rgba(11, 79, 108, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* ========= TASKBAR ========= */
+        .taskbar {
+            background: var(--deep-teal);
+            color: white;
+            padding: 11px 0;
+            font-size: 0.85rem;
+            transition: transform 0.35s ease, opacity 0.35s;
+            transform: translateY(-100%);
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1002;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+        }
+        .taskbar.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .taskbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 0 24px;
+        }
+        .taskbar-left {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .live-badge {
+            background: var(--coral);
+            border-radius: 40px;
+            padding: 4px 14px;
+            font-weight: 700;
+            animation: pulseRed 1.2s infinite;
+            font-size: 0.8rem;
+        }
+        @keyframes pulseRed {
+            0% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 1;
+                background: #ff6b7a;
+            }
+        }
+        .taskbar-right a {
+            color: var(--gold);
+            text-decoration: none;
+            margin-left: 18px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .taskbar-right a:hover {
+            color: white;
+        }
+
+        /* ========= NAVBAR ========= */
+        .navbar {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo-helix {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .helix-cycle {
+            width: 50px;
+            height: 50px;
+            animation: spinHelix 8s infinite linear;
+        }
+        .helix-cycle svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 6px #20A4B2);
+        }
+        @keyframes spinHelix {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .logo-text h1 {
+            font-size: 1.9rem;
+            background: linear-gradient(135deg, var(--ocean), var(--aqua));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 900;
+        }
+        .logo-text div {
+            font-size: 0.75rem;
+            color: var(--text-mid);
+            letter-spacing: 0.5px;
+        }
+        .search-bar {
+            display: flex;
+            background: #f0f4f7;
+            border-radius: var(--radius-pill);
+            padding: 6px 16px;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid transparent;
+            transition: var(--transition);
+        }
+        .search-bar:focus-within {
+            border-color: var(--aqua);
+            box-shadow: 0 0 0 4px rgba(32, 164, 178, 0.08);
+        }
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 9px;
+            width: 240px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-bar button {
+            background: var(--aqua);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .search-bar button:hover {
+            background: var(--ocean);
+        }
+        .nav-links {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            text-decoration: none;
+            font-weight: 600;
+            color: #1e2f3e;
+            transition: color 0.2s;
+            font-size: 0.95rem;
+        }
+        .nav-links a:hover {
+            color: var(--aqua);
+        }
+        .login-btn,
+        .register-btn {
+            padding: 9px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .login-btn {
+            background: var(--ocean);
+            color: white !important;
+        }
+        .register-btn {
+            background: var(--aqua);
+            color: white !important;
+            margin-left: 2px;
+        }
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.7rem;
+            cursor: pointer;
+            color: var(--ocean);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        .hamburger-btn:hover {
+            background: #eef5f7;
+        }
+
+        /* ========= HERO ========= */
+        .hero {
+            background: linear-gradient(120deg, #EFF7F9 0%, #ffffff 50%, #f0f9fb 100%);
+            padding: 60px 0 70px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            right: -80px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(32, 164, 178, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .hero-grid {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 40px;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-content {
+            flex: 1;
+            min-width: 280px;
+        }
+        .hero-badge {
+            background: #e0f2f5;
+            display: inline-block;
+            padding: 7px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--ocean);
+            margin-bottom: 16px;
+            animation: fadeInUp 0.6s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .hero-content h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 14px;
+            letter-spacing: -0.5px;
+        }
+        .growing-words {
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+            margin: 18px 0;
+            font-size: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .static-prefix {
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .rotating-word {
+            background: linear-gradient(120deg, var(--ocean), var(--aqua));
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: 900;
+            animation: growShrink 0.7s infinite alternate;
+            font-size: 2rem;
+            display: inline-block;
+        }
+        @keyframes growShrink {
+            0% {
+                transform: scale(0.92);
+            }
+            100% {
+                transform: scale(1.08);
+            }
+        }
+        .hero-content p {
+            font-size: 1.05rem;
+            color: var(--text-mid);
+            margin-bottom: 24px;
+            max-width: 500px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: var(--ocean);
+            color: white;
+            padding: 13px 30px;
+            border-radius: 40px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(11, 79, 108, 0.25);
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+        }
+        .btn-primary:hover {
+            background: #0a3f57;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(11, 79, 108, 0.35);
+        }
+        .btn-outline {
+            border: 2px solid var(--aqua);
+            background: transparent;
+            color: #1a6b78;
+            padding: 11px 28px;
+            border-radius: 40px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .btn-outline:hover {
+            background: var(--aqua);
+            color: white;
+            transform: translateY(-3px);
+        }
+        .hero-img img {
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: var(--shadow-lg);
+            animation: floatImg 5s ease-in-out infinite;
+        }
+        @keyframes floatImg {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        .hero-img {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        /* ========= MOTIVATIONAL BANNER ========= */
+        .moto-banner {
+            background: linear-gradient(135deg, var(--deep-teal), #0a3f55);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .moto-banner span {
+            color: var(--gold);
+            font-style: italic;
+        }
+        .moto-banner .icon-sparkle {
+            animation: sparkle 1.5s infinite;
+            display: inline-block;
+        }
+        @keyframes sparkle {
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.15);
+            }
+        }
+
+        /* ========= STATS ========= */
+        .stats-section {
+            padding: 50px 0;
+            background: white;
+        }
+        .stats-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 20px;
+            text-align: center;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 180px;
+            background: #f9fbfd;
+            padding: 28px 18px;
+            border-radius: var(--radius-xl);
+            transition: var(--transition);
+            border: 1px solid transparent;
+            cursor: default;
+        }
+        .stat-card:hover {
+            transform: translateY(-6px);
+            border-color: #d4eaf0;
+            box-shadow: var(--shadow-md);
+        }
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 900;
+            color: var(--ocean);
+            font-family: 'Playfair Display', serif;
+        }
+        .stat-label {
+            font-weight: 600;
+            color: var(--text-mid);
+            margin-top: 4px;
+        }
+
+        /* ========= MARKETPLACE ========= */
+        .marketplace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 26px;
+            margin: 35px 0;
+        }
+        .product-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid #eef3f6;
+            position: relative;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: #cde8ef;
+        }
+        .product-img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            background: #eef2f5;
+            transition: transform 0.5s;
+        }
+        .product-card:hover .product-img {
+            transform: scale(1.04);
+        }
+        .product-info {
+            padding: 16px 18px 20px;
+        }
+        .product-info h3 {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 1.05rem;
+        }
+        .product-info p {
+            color: var(--text-mid);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .buy-btn {
+            background: var(--mint);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+        .buy-btn:hover {
+            background: #20b85f;
+            box-shadow: 0 6px 18px rgba(37, 211, 102, 0.3);
+        }
+        .product-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--coral);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            z-index: 2;
+        }
+
+        /* ========= SERVICES ========= */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 26px;
+            margin: 35px 0;
+        }
+        .service-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px 22px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: #cde8ef;
+        }
+        .service-card i {
+            font-size: 2.8rem;
+            color: var(--aqua);
+            margin-bottom: 14px;
+            transition: var(--transition);
+        }
+        .service-card:hover i {
+            transform: scale(1.15);
+            color: var(--ocean);
+        }
+        .service-card h3 {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .service-card p {
+            color: var(--text-mid);
+            font-size: 0.9rem;
+        }
+        .service-card .service-number {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 5rem;
+            font-weight: 900;
+            color: #f0f7f9;
+            z-index: 0;
+        }
+
+        /* ========= TABS ========= */
+        .tabs-wrapper {
+            margin: 40px 0;
+        }
+        .tabs-header {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-bottom: 3px solid var(--aqua);
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 11px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #2c5a6e;
+            border-radius: 40px;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .tab-btn.active {
+            background: var(--aqua);
+            color: white;
+            box-shadow: 0 4px 14px rgba(32, 164, 178, 0.35);
+        }
+        .tab-btn:hover:not(.active) {
+            background: #e8f4f7;
+        }
+        .tab-content {
+            display: none;
+            padding: 28px;
+            background: #FBFEFE;
+            margin-top: 18px;
+            border-radius: var(--radius-xl);
+            animation: fadeIn 0.35s ease;
+            border: 1px solid #e0eef3;
+        }
+        .tab-content.active-tab {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .tab-content img {
+            width: 100%;
+            border-radius: 20px;
+            margin-top: 16px;
+            max-height: 350px;
+            object-fit: cover;
+        }
+
+        /* ========= ARTICLES ========= */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 26px;
+            margin: 35px 0;
+        }
+        .article-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid #eef3f6;
+        }
+        .article-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+        .article-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s;
+        }
+        .article-card:hover .article-img {
+            transform: scale(1.05);
+        }
+        .article-content {
+            padding: 18px 20px 22px;
+        }
+        .article-tag {
+            display: inline-block;
+            background: #e0f2f5;
+            color: var(--ocean);
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .article-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        .article-content p {
+            color: var(--text-mid);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .read-more {
+            color: var(--aqua);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .read-more:hover {
+            color: var(--ocean);
+        }
+
+        /* ========= TESTIMONIALS ========= */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 35px 0;
+        }
+        .testimonial-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--aqua);
+            transition: var(--transition);
+        }
+        .testimonial-card:hover {
+            box-shadow: var(--shadow-md);
+            border-left-color: var(--ocean);
+        }
+        .testimonial-card .quote-icon {
+            color: var(--aqua);
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .testimonial-card p {
+            font-style: italic;
+            color: var(--text-mid);
+            margin-bottom: 12px;
+        }
+        .testimonial-author {
+            font-weight: 700;
+            color: var(--ocean);
+        }
+
+        /* ========= FAQ ========= */
+        .faq-grid {
+            display: grid;
+            gap: 16px;
+            margin: 35px 0;
+        }
+        .faq-item {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid #eef3f6;
+        }
+        .faq-item:hover {
+            border-color: #cde8ef;
+            box-shadow: var(--shadow-md);
+        }
+        .faq-question {
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, margin-top 0.4s;
+            color: var(--text-mid);
+            font-size: 0.95rem;
+        }
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            margin-top: 12px;
+        }
+        .faq-item.open .faq-question i {
+            transform: rotate(180deg);
+            color: var(--aqua);
+        }
+        .faq-question i {
+            transition: transform 0.35s;
+            color: var(--aqua);
+        }
+
+        /* ========= CONTACT ========= */
+        .contact-section {
+            background: #F3F9FC;
+            border-radius: 40px;
+            padding: 44px 36px;
+            margin: 50px 0;
+        }
+        .contact-flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 36px;
+        }
+        .contact-flex>div {
+            flex: 1;
+            min-width: 280px;
+        }
+        .contact-section h3 {
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+        .social-icons-row {
+            display: flex;
+            gap: 16px;
+            font-size: 1.7rem;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+        .social-icons-row a {
+            transition: var(--transition);
+            text-decoration: none;
+        }
+        .social-icons-row a:hover {
+            transform: translateY(-4px);
+        }
+        .contact-form-card {
+            background: white;
+            border-radius: 28px;
+            padding: 26px;
+            box-shadow: var(--shadow-sm);
+        }
+        .contact-form-card input,
+        .contact-form-card textarea,
+        .contact-form-card select {
+            width: 100%;
+            padding: 13px 16px;
+            margin: 8px 0;
+            border-radius: 40px;
+            border: 2px solid #e8eef2;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        .contact-form-card textarea {
+            border-radius: 20px;
+            resize: vertical;
+            min-height: 90px;
+        }
+        .contact-form-card input:focus,
+        .contact-form-card textarea:focus,
+        .contact-form-card select:focus {
+            border-color: var(--aqua);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(32, 164, 178, 0.06);
+        }
+
+        /* ========= FOOTER ========= */
+        footer {
+            background: #0F2A33;
+            color: #cbdbe0;
+            padding: 50px 0 30px;
+            margin-top: 40px;
+        }
+        footer a {
+            color: #b0cdd6;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        footer a:hover {
+            color: white;
+        }
+        footer h4 {
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        /* ========= AUTH MODAL ========= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            z-index: 4000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .auth-modal {
+            background: white;
+            max-width: 480px;
+            width: 92%;
+            border-radius: 36px;
+            padding: 34px 28px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .auth-modal .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #999;
+            transition: var(--transition);
+            background: none;
+            border: none;
+        }
+        .auth-modal .close-modal:hover {
+            color: var(--coral);
+            transform: rotate(90deg);
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 24px;
+            background: #f0f4f7;
+            border-radius: 40px;
+            padding: 4px;
+        }
+        .auth-tab {
+            cursor: pointer;
+            padding: 10px 26px;
+            border-radius: 40px;
+            font-weight: 700;
+            transition: var(--transition);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            background: transparent;
+            flex: 1;
+        }
+        .auth-tab.active {
+            background: var(--ocean);
+            color: white;
+            box-shadow: 0 4px 14px rgba(11, 79, 108, 0.3);
+        }
+        .auth-form {
+            display: none;
+            text-align: left;
+        }
+        .auth-form.active-form {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .auth-form h3 {
+            text-align: center;
+            margin-bottom: 16px;
+            font-weight: 800;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 13px 16px;
+            margin: 8px 0;
+            border-radius: 40px;
+            border: 2px solid #e8eef2;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        .auth-form input:focus {
+            border-color: var(--aqua);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(32, 164, 178, 0.06);
+        }
+        .auth-form .btn-primary {
+            width: 100%;
+            justify-content: center;
+            margin-top: 8px;
+            font-size: 1rem;
+            padding: 14px;
+        }
+        .auth-form p {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: var(--text-mid);
+        }
+        .auth-form p a {
+            color: var(--aqua);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* ========= WHATSAPP FLOAT ========= */
+        .whatsapp-sticky {
+            position: fixed;
+            right: 22px;
+            bottom: 28px;
+            background: var(--mint);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4);
+            transition: var(--transition);
+            animation: bounceW 2s infinite;
+        }
+        @keyframes bounceW {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        .whatsapp-sticky:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 28px rgba(37, 211, 102, 0.5);
+        }
+        .whatsapp-sticky a {
+            color: white;
+            font-size: 1.7rem;
+        }
+
+        /* ========= SCROLL TO TOP ========= */
+        .scroll-top-btn {
+            position: fixed;
+            right: 22px;
+            bottom: 100px;
+            width: 46px;
+            height: 46px;
+            background: var(--ocean);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 998;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            border: none;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-md);
+        }
+        .scroll-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .scroll-top-btn:hover {
+            background: var(--deep-teal);
+            transform: translateY(-3px);
+        }
+
+        /* ========= PARTICLES CANVAS ========= */
+        #particlesCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.35;
+        }
+
+        /* ========= RESPONSIVE ========= */
+        @media (max-width: 960px) {
+            .nav-links {
+                display: none;
+            }
+            .hamburger-btn {
+                display: flex;
+            }
+            .search-bar {
+                width: 100%;
+                order: 3;
+            }
+            .search-bar input {
+                width: 100%;
+            }
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .sidebar-panel {
+                width: 92vw;
+                right: -92vw;
+                border-radius: 20px 0 0 20px;
+            }
+            .sidebar-panel.open {
+                right: 0;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 0 16px;
+            }
+            .hero-content h1 {
+                font-size: 1.6rem;
+            }
+            .rotating-word {
+                font-size: 1.3rem;
+            }
+            .stats-grid {
+                flex-direction: column;
+            }
+            .contact-section {
+                padding: 24px 16px;
+                border-radius: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== PARTICLES BACKGROUND ===== -->
+<canvas id="particlesCanvas"></canvas>
+
+<!-- ===== ENHANCED SIDEBAR OVERLAY ===== -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<aside class="sidebar-panel" id="sidebarPanel">
+    <div class="sidebar-header">
+        <h3><i class="fas fa-dna"></i> HELIX PROMAX</h3>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sidebar-body">
+        <a href="#home" class="sidebar-link"><i class="fas fa-home"></i> Home <span class="sidebar-badge">NEW</span></a>
+        <a href="#marketplace" class="sidebar-link"><i class="fas fa-pills"></i> PharmaHub</a>
+        <a href="#services" class="sidebar-link"><i class="fas fa-chalkboard-user"></i> Core Services</a>
+        <a href="#tabsSection" class="sidebar-link"><i class="fas fa-microscope"></i> Inside Helix</a>
+        <a href="#articles" class="sidebar-link"><i class="fas fa-newspaper"></i> Latest Insights</a>
+        <a href="#testimonials" class="sidebar-link"><i class="fas fa-star"></i> Testimonials</a>
+        <a href="#faq" class="sidebar-link"><i class="fas fa-circle-question"></i> FAQ</a>
+        <a href="#contact" class="sidebar-link"><i class="fas fa-envelope"></i> Contact Us</a>
+        <div class="sidebar-divider"></div>
+        <a href="#" class="sidebar-link" id="sidebarRegisterLink"><i class="fas fa-user-plus"></i> Register Now <span class="sidebar-badge">FREE</span></a>
+        <a href="#" class="sidebar-link" id="sidebarLoginLink"><i class="fas fa-sign-in-alt"></i> Log In</a>
+        <a href="https://wa.me/255745546056" target="_blank" class="sidebar-link"><i class="fab fa-whatsapp"></i> WhatsApp Chat</a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="sidebar-social-row">
+            <a href="#" style="background:#25D366;" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" style="background:#0088cc;" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+            <a href="#" style="background:#1877F2;" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" style="background:#E4405F;" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" style="background:#1DA1F2;" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" style="background:#0A66C2;" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" style="background:#FF0000;" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="#" style="background:#000000;" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        </div>
+        <a href="#" class="sidebar-cta-btn" id="sidebarCtaBtn"><i class="fas fa-rocket"></i> Get Started Today</a>
+    </div>
+</aside>
+
+<!-- ===== TASKBAR ===== -->
+<div class="taskbar" id="smartTaskbar">
+    <div class="taskbar-container">
+        <div class="taskbar-left">
+            <span><i class="fas fa-dna"></i> Helix Higher Education Hub</span>
+            <span class="live-badge"><i class="fas fa-circle"></i> 24/7 Expert Support</span>
+        </div>
+        <div class="taskbar-right">
+            <i class="fas fa-phone-alt"></i> +255 745 546 056
+            <a href="https://wa.me/255745546056" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <a href="#" id="showAuthBtn"><i class="fas fa-user-graduate"></i> Login/Register</a>
+            <a href="#marketplace"><i class="fas fa-pills"></i> PharmaHub</a>
+            <a href="#services"><i class="fas fa-chalkboard"></i> Services</a>
+        </div>
+    </div>
+</div>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="navbar" id="home">
+    <div class="nav-container">
+        <div class="logo-helix">
+            <div class="helix-cycle"><svg viewBox="0 0 100 100"><path d="M50 10 L50 90 M30 25 Q70 40 30 55 Q70 70 30 85" stroke="#20A4B2" stroke-width="3" fill="none"/><path d="M70 25 Q30 40 70 55 Q30 70 70 85" stroke="#0B4F6C" stroke-width="3" fill="none"/><circle cx="50" cy="18" r="3" fill="#20A4B2"/><circle cx="50" cy="82" r="3" fill="#0B4F6C"/></svg></div>
+            <div class="logo-text"><h1>HELIX <span>BIOSCIENCES</span></h1><div>⚛️ PROMAX · Research · Pharma · AI</div></div>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="globalSearch" placeholder="Search medicine, courses, research...">
+            <button id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
+            <a href="#home">Home</a><a href="#marketplace">PharmaHub</a><a href="#services">Services</a><a href="#tabsSection">Inside Helix</a><a href="#articles">Insights</a>
+            <a href="#" id="navRegisterBtn" class="register-btn">Register</a>
+            <a href="#" id="navLoginBtn" class="login-btn">Log In</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-content">
+            <div class="hero-badge">🎓 Higher Education & Real-life Impact</div>
+            <h1>Empowering Health & Science<br>for Everyday Life</h1>
+            <div class="growing-words"><span class="static-prefix">Pioneering </span><div class="word-rotator"><span id="dynamicWord" class="rotating-word">Genomics</span></div></div>
+            <p>22k+ trained professionals | 120+ countries | 1000+ research outputs. Integrated platform for medicine delivery, chemical manufacturing, and AI-driven genomics.</p>
+            <div class="btn-group"><a href="#marketplace" class="btn-primary"><i class="fas fa-pills"></i> Explore PharmaHub</a><a href="#services" class="btn-outline"><i class="fas fa-chalkboard-user"></i> View Services</a></div>
+        </div>
+        <div class="hero-img"><img src="https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Helix research team" loading="eager"></div>
+    </div>
+</section>
+
+<!-- ===== MOTIVATIONAL BANNER ===== -->
+<div class="moto-banner">
+    <span class="icon-sparkle">✨</span> <span>"Transforming Lives Through Science & Innovation"</span> – Join 22,000+ Professionals Worldwide <span class="icon-sparkle">✨</span>
+</div>
+
+<!-- ===== STATS ===== -->
+<section class="stats-section" id="stats">
+    <div class="container stats-grid">
+        <div class="stat-card"><div class="stat-number" data-target="22000">0+</div><div class="stat-label">Trained Professionals Globally</div></div>
+        <div class="stat-card"><div class="stat-number" data-target="120">0+</div><div class="stat-label">Countries Impacted</div></div>
+        <div class="stat-card"><div class="stat-number" data-target="1000">0+</div><div class="stat-label">Publications, Grants & Jobs</div></div>
+        <div class="stat-card"><div class="stat-number" data-target="100">0+</div><div class="stat-label">Academic & Industry Partners</div></div>
+        <div class="stat-card"><div class="stat-number" data-target="500">0+</div><div class="stat-label">Medicines Delivered Daily</div></div>
+    </div>
+</section>
+
+<!-- ===== MARKETPLACE ===== -->
+<div class="container section-spacing" id="marketplace">
+    <span class="section-badge">🏪 PharmaHub</span>
+    <h2 class="section-title">Essential Medicines – Contact for Best Price</h2>
+    <p class="section-sub">Nationwide delivery, genuine quality. Request via WhatsApp or registration. <strong>No hidden fees – transparent service.</strong></p>
+    <div class="marketplace-grid">
+        <div class="product-card">
+            <span class="product-tag">Bestseller</span>
+            <img class="product-img" src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400" alt="Amoxicillin" loading="lazy">
+            <div class="product-info"><h3>Amoxicillin 500mg</h3><p>Broad-spectrum antibiotic, 100 capsules.</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=I%20need%20Amoxicillin%20500mg','_blank')"><i class="fab fa-whatsapp"></i> Request Price</button></div>
+        </div>
+        <div class="product-card">
+            <span class="product-tag">Essential</span>
+            <img class="product-img" src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400" alt="Antimalarial" loading="lazy">
+            <div class="product-info"><h3>Artemether/Lumefantrine</h3><p>Malaria treatment (6 doses).</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=Need%20Antimalarial','_blank')">Chat on WhatsApp</button></div>
+        </div>
+        <div class="product-card">
+            <img class="product-img" src="https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400" alt="Vitamins" loading="lazy">
+            <div class="product-info"><h3>Multivitamin Complex</h3><p>Immune support, 60 tablets.</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=Multivitamin%20order','_blank')">Inquire</button></div>
+        </div>
+        <div class="product-card">
+            <span class="product-tag">Popular</span>
+            <img class="product-img" src="https://images.unsplash.com/photo-1576602976047-d0f1a2dd0e6d?w=400" alt="Paracetamol" loading="lazy">
+            <div class="product-info"><h3>Paracetamol 500mg</h3><p>Pain relief (100 tablets).</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=Paracetamol%20request','_blank')"><i class="fab fa-whatsapp"></i> Order</button></div>
+        </div>
+        <div class="product-card">
+            <img class="product-img" src="https://images.unsplash.com/photo-1584308972272-4e0c0f6c1d5f?w=400" alt="Cough Syrup" loading="lazy">
+            <div class="product-info"><h3>Herbal Cough Syrup</h3><p>Natural formula, 100ml.</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=Cough%20syrup','_blank')">Get Quote</button></div>
+        </div>
+        <div class="product-card">
+            <img class="product-img" src="https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Antibiotic ointment" loading="lazy">
+            <div class="product-info"><h3>Antibiotic Ointment</h3><p>Topical cream 15g.</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=Antibiotic%20ointment','_blank')">WhatsApp</button></div>
+        </div>
+        <div class="product-card">
+            <span class="product-tag">New</span>
+            <img class="product-img" src="https://images.unsplash.com/photo-1550572017-edd951b55104?w=400" alt="Omeprazole" loading="lazy">
+            <div class="product-info"><h3>Omeprazole 20mg</h3><p>Gastric relief, 30 capsules.</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=Omeprazole%20order','_blank')">Request</button></div>
+        </div>
+        <div class="product-card">
+            <img class="product-img" src="https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400" alt="Ibuprofen" loading="lazy">
+            <div class="product-info"><h3>Ibuprofen 400mg</h3><p>Anti-inflammatory, 50 tablets.</p><button class="buy-btn" onclick="window.open('https://wa.me/255745546056?text=Ibuprofen%20request','_blank')">Inquire Now</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SERVICES ===== -->
+<div class="container section-spacing" id="services">
+    <span class="section-badge">🔬 Core Services</span>
+    <h2 class="section-title">Helix PROMAX – Higher Education & Industry Solutions</h2>
+    <p class="section-sub">Bridging the gap between academic knowledge and real-world application.</p>
+    <div class="services-grid">
+        <div class="service-card"><span class="service-number">01</span><i class="fas fa-dna"></i><h3>Genomics Consulting</h3><p>NGS, Nanopore analysis & interpretation for researchers worldwide.</p></div>
+        <div class="service-card"><span class="service-number">02</span><i class="fas fa-chalkboard-user"></i><h3>Bioinformatics Training</h3><p>Workshops, certifications, and corporate training – PROMAX level.</p></div>
+        <div class="service-card"><span class="service-number">03</span><i class="fas fa-pills"></i><h3>Medicine Delivery</h3><p>Nationwide Tanzania & Nigeria – prescription & OTC drugs, fast delivery.</p></div>
+        <div class="service-card"><span class="service-number">04</span><i class="fas fa-flask"></i><h3>Chemical Synthesis Training</h3><p>Hands-on API manufacturing & GMP standards for industry professionals.</p></div>
+        <div class="service-card"><span class="service-number">05</span><i class="fas fa-microscope"></i><h3>AI Drug Discovery</h3><p>Computational screening & molecular docking for pharmaceutical R&D.</p></div>
+        <div class="service-card"><span class="service-number">06</span><i class="fas fa-hand-holding-usd"></i><h3>Grant & Scholarship Support</h3><p>Expert assistance for research funding and academic applications.</p></div>
+        <div class="service-card"><span class="service-number">07</span><i class="fas fa-laptop-code"></i><h3>Online Learning Platform</h3><p>Self-paced courses in genomics, chemistry & AI – earn certificates.</p></div>
+        <div class="service-card"><span class="service-number">08</span><i class="fas fa-building-columns"></i><h3>University Partnerships</h3><p>Collaborative research programs with leading global institutions.</p></div>
+    </div>
+</div>
+
+<!-- ===== TABS SECTION ===== -->
+<div class="container section-spacing" id="tabsSection">
+    <span class="section-badge">🧠 Deep Knowledge</span>
+    <h2 class="section-title">Inside Helix – Advanced Knowledge System</h2>
+    <p class="section-sub">Explore our methodologies, processes, and cutting-edge integrations.</p>
+    <div class="tabs-wrapper">
+        <div class="tabs-header">
+            <button class="tab-btn active" data-tab="tab1">How We Work (R&D)</button>
+            <button class="tab-btn" data-tab="tab2">Chemical Manufacturing</button>
+            <button class="tab-btn" data-tab="tab3">Pharma Supply Chain</button>
+            <button class="tab-btn" data-tab="tab4">AI & Genomics</button>
+            <button class="tab-btn" data-tab="tab5">Nanopore Masterclass</button>
+        </div>
+        <div id="tab1" class="tab-content active-tab">
+            <h3>⚙️ Our Integrated Model (Higher Education)</h3>
+            <p>Helix combines academic research, industry training, and community pharmacy. We follow ISO & GMP standards. Our alumni work at leading biotech firms across the globe, driving innovation in healthcare and pharmaceutical sciences.</p>
+            <img src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg?auto=compress&cs=tinysrgb&w=500" alt="R&D process" loading="lazy">
+        </div>
+        <div id="tab2" class="tab-content">
+            <h3>🧪 Step-by-Step Chemical Manufacturing</h3>
+            <p>From raw material sourcing to API synthesis: 1. Reaction design → 2. Lab-scale validation → 3. Pilot reactor → 4. GMP production → 5. Quality control. Helix offers virtual tours and internships for aspiring chemists.</p>
+            <img src="https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Chemical manufacturing" loading="lazy">
+        </div>
+        <div id="tab3" class="tab-content">
+            <h3>🚚 Reliable Pharma Supply Chain</h3>
+            <p>We partner with licensed distributors to deliver essential medicines to remote areas. Real-time tracking and cold-chain management for biologics ensure product integrity from warehouse to patient.</p>
+            <img src="https://images.pexels.com/photos/4483610/pexels-photo-4483610.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Supply chain" loading="lazy">
+        </div>
+        <div id="tab4" class="tab-content">
+            <h3>🧠 AI-Powered Genomics Platform</h3>
+            <p>Our proprietary algorithms analyze NGS data, predict drug targets, and optimize chemical reactions. Used by 100+ research institutions worldwide for groundbreaking discoveries.</p>
+            <img src="https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=500" alt="AI Genomics" loading="lazy">
+        </div>
+        <div id="tab5" class="tab-content">
+            <h3>🔬 Nanopore Data Analysis Masterclass</h3>
+            <p>Real-time sequencing & pathogen detection – hands-on workshop by Helix experts. Learn from raw signal to variant calling. Certificate included upon successful completion.</p>
+            <img src="https://images.pexels.com/photos/356040/pexels-photo-356040.jpeg?auto=compress&cs=tinysrgb&w=500" alt="Nanopore sequencing" loading="lazy">
+        </div>
+    </div>
+</div>
+
+<!-- ===== ARTICLES ===== -->
+<div class="container section-spacing" id="articles">
+    <span class="section-badge">📰 Insights</span>
+    <h2 class="section-title">Latest from Helix PROMAX</h2>
+    <p class="section-sub">Stay ahead with cutting-edge research, industry news, and educational content.</p>
+    <div class="articles-grid">
+        <div class="article-card">
+            <img class="article-img" src="https://images.pexels.com/photos/356040/pexels-photo-356040.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Nanopore sequencing" loading="lazy">
+            <div class="article-content"><span class="article-tag">Nanopore Technology</span><div class="article-title">Nanopore Data Analysis Masterclass</div><p>Real-time sequencing & pathogen detection – hands-on workshop by Helix experts.</p><a href="#" class="read-more">Read More →</a></div>
+        </div>
+        <div class="article-card">
+            <img class="article-img" src="https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Medicine delivery" loading="lazy">
+            <div class="article-content"><span class="article-tag">PharmaHub</span><div class="article-title">Nationwide Medicine Delivery Expanded</div><p>Now serving all 31 regions in Tanzania within 48 hours.</p><a href="#" class="read-more">Learn more →</a></div>
+        </div>
+        <div class="article-card">
+            <img class="article-img" src="https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=600" alt="AI chemistry" loading="lazy">
+            <div class="article-content"><span class="article-tag">AI</span><div class="article-title">Machine Learning for Reaction Yield Prediction</div><p>Helix AI reduces chemical waste by 35% in API synthesis.</p><a href="#" class="read-more">Read →</a></div>
+        </div>
+        <div class="article-card">
+            <img class="article-img" src="https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Genomics" loading="lazy">
+            <div class="article-content"><span class="article-tag">Genomics</span><div class="article-title">CRISPR & AI: Democratizing Gene Editing</div><p>How Helix is making genomic tools accessible in low-resource settings.</p><a href="#" class="read-more">Read More →</a></div>
+        </div>
+        <div class="article-card">
+            <img class="article-img" src="https://images.pexels.com/photos/3735747/pexels-photo-3735747.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Training" loading="lazy">
+            <div class="article-content"><span class="article-tag">Education</span><div class="article-title">Helix Launches Online Bioinformatics Certificate</div><p>Earn a recognized certificate from anywhere in the world – 100% online.</p><a href="#" class="read-more">Enroll Now →</a></div>
+        </div>
+        <div class="article-card">
+            <img class="article-img" src="https://images.pexels.com/photos/4021779/pexels-photo-4021779.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Pharma research" loading="lazy">
+            <div class="article-content"><span class="article-tag">Research</span><div class="article-title">New Antimicrobial Compounds Discovered</div><p>Helix research team identifies promising candidates for drug-resistant infections.</p><a href="#" class="read-more">Discover →</a></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== TESTIMONIALS ===== -->
+<div class="container section-spacing" id="testimonials">
+    <span class="section-badge">⭐ Testimonials</span>
+    <h2 class="section-title">What Our Community Says</h2>
+    <p class="section-sub">Real stories from professionals, students, and partners worldwide.</p>
+    <div class="testimonials-grid">
+        <div class="testimonial-card">
+            <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+            <p>"Helix PROMAX transformed my career. The bioinformatics training gave me skills that landed me a job at a top biotech firm. Highly recommended!"</p>
+            <div class="testimonial-author">– Dr. Amina K., Tanzania</div>
+        </div>
+        <div class="testimonial-card">
+            <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+            <p>"The medicine delivery service is reliable and fast. As a healthcare provider in a remote area, Helix PharmaHub is a lifesaver."</p>
+            <div class="testimonial-author">– Nurse Oluwaseun B., Nigeria</div>
+        </div>
+        <div class="testimonial-card">
+            <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+            <p>"I completed the Nanopore Masterclass and it was world-class. The instructors are knowledgeable and the hands-on approach is unmatched."</p>
+            <div class="testimonial-author">– James M., Kenya</div>
+        </div>
+        <div class="testimonial-card">
+            <div class="quote-icon"><i class="fas fa-quote-right"></i></div>
+            <p>"Helix helped our university set up a genomics lab. Their consulting services are thorough and professional. A true partner in education."</p>
+            <div class="testimonial-author">– Prof. Sarah L., Ghana</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FAQ ===== -->
+<div class="container section-spacing" id="faq">
+    <span class="section-badge">❓ FAQ</span>
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <p class="section-sub">Quick answers to common inquiries about Helix PROMAX services.</p>
+    <div class="faq-grid">
+        <div class="faq-item">
+            <div class="faq-question">How do I order medicines from PharmaHub? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Simply click the WhatsApp button on any product, or register on our platform. We'll confirm your order and arrange delivery within 48 hours.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Are the training certificates recognized? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Yes! Helix PROMAX certificates are recognized by leading biotech firms and academic institutions globally. We adhere to international training standards.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Do you ship medicines internationally? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Currently, we deliver nationwide in Tanzania and Nigeria. International shipping for select products is available upon request – contact us for details.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">How can I partner with Helix as an institution? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">We welcome university and industry partnerships! Reach out via our contact form or WhatsApp, and our partnership team will get back to you within 24 hours.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Is there a free trial for the online courses? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Yes! We offer free introductory modules for most courses. Register to access them and experience the Helix learning platform firsthand.</div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CONTACT ===== -->
+<div class="container" id="contact">
+    <div class="contact-section">
+        <span class="section-badge">📬 Get In Touch</span>
+        <div class="contact-flex" style="margin-top:20px;">
+            <div>
+                <h3><i class="fas fa-map-marker-alt"></i> Helix Physical Hub</h3>
+                <p><strong>Along Alari Akata Filling Station, Under G, Ogbomoso, Oyo state, Nigeria</strong><br>📞 +255 745 546 056 (Tanzania HQ)<br><i class="fab fa-whatsapp"></i> Direct: 0745546056<br><i class="fas fa-envelope"></i> support@helixbiosciences.com</p>
+                <div style="margin-top:20px;">
+                    <h4><i class="fas fa-share-alt"></i> All Social Media Channels (24/7)</h4>
+                    <div class="social-icons-row">
+                        <a href="#" style="color:#25D366;" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" style="color:#0088cc;" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                        <a href="#" style="color:#1877F2;" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color:#E4405F;" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color:#1DA1F2;" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color:#0A66C2;" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" style="color:#FF0000;" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" style="color:#000000;" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" style="color:#5865F2;" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                        <a href="#" style="color:#FF5700;" aria-label="Reddit"><i class="fab fa-reddit"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="contact-form-card">
+                <h3>Quick Inquiry</h3>
+                <p style="color:var(--text-mid);margin-bottom:12px;">Training / Pharma / Partnership – we reply within 1 hour.</p>
+                <form id="contactForm">
+                    <input type="text" placeholder="Full Name *" required>
+                    <input type="email" placeholder="Email Address *" required>
+                    <input type="tel" placeholder="Phone Number (WhatsApp)">
+                    <select>
+                        <option value="">Select Inquiry Type</option><option>Medicine Order</option><option>Training / Course</option><option>Partnership</option><option>Research Collaboration</option><option>Other</option>
+                    </select>
+                    <textarea rows="3" placeholder="Your message..."></textarea>
+                    <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">🚀 Send Message</button>
+                    <p id="contactFeedback" style="text-align:center;margin-top:8px;font-weight:600;"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+    <div class="container" style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:28px;">
+        <div style="flex:1;min-width:200px;">
+            <h3 style="color:white;">HELIX BIOSCIENCES</h3>
+            <p>PROMAX Level | Research, Pharma & AI for Daily Life</p>
+            <div style="display:flex; gap:14px; margin-top:10px; font-size:1.2rem;">
+                <i class="fab fa-whatsapp"></i><i class="fab fa-telegram"></i><i class="fab fa-instagram"></i><i class="fab fa-linkedin"></i><i class="fab fa-facebook"></i><i class="fab fa-twitter"></i>
+            </div>
+        </div>
+        <div><h4>Quick Access</h4><p><a href="#marketplace">PharmaHub</a></p><p><a href="#services">Services</a></p><p><a href="#tabsSection">Inside Helix</a></p><p><a href="#articles">Articles</a></p><p><a href="#testimonials">Testimonials</a></p></div>
+        <div><h4>Support</h4><p>📞 +255 745 546 056</p><p>✉️ care@helix.co.tz</p><p><i class="fab fa-whatsapp"></i> 0745546056</p></div>
+        <div><h4>Legal</h4><p>Licensed Pharma Distributor</p><p>GMP Certified Training</p><p>© 2025 Helix Biosciences Inc.</p></div>
+    </div>
+</footer>
+
+<!-- LIVE CHAT WIDGET -->
+<div id="liveChatWidget" style="position:fixed; bottom:100px; right:22px; z-index:1000;">
+    <button id="openChatBtn" style="background:#20A4B2; border:none; color:white; width:56px; height:56px; border-radius:50%; font-size:1.5rem; box-shadow: 0 4px 14px rgba(0,0,0,0.2); cursor:pointer;">
+        <i class="fas fa-comments"></i>
+    </button>
+    <div id="chatWindow" style="display:none; width:300px; height:400px; background:white; border-radius:20px; box-shadow:0 8px 30px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; position:absolute; bottom:70px; right:0;">
+        <div style="background:#0B4F6C; color:white; padding:12px; font-weight:700;">
+            💬 Live Support
+            <span id="onlineBadge" style="float:right; background:#25D366; padding:2px 8px; border-radius:10px; font-size:0.7rem;">Online</span>
+        </div>
+        <div id="chatMessages" style="flex:1; overflow-y:auto; padding:10px; font-size:0.85rem;"></div>
+        <div style="display:flex; padding:8px; border-top:1px solid #eee;">
+            <input id="chatInput" type="text" placeholder="Andika ujumbe..." style="flex:1; border-radius:20px; border:1px solid #ddd; padding:8px;">
+            <button id="sendChatBtn" style="background:#20A4B2; color:white; border:none; border-radius:50%; width:36px; height:36px; margin-left:5px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== WHATSAPP STICKY ===== -->
+<div class="whatsapp-sticky">
+    <a href="https://wa.me/255745546056?text=Hi%20Helix%20PROMAX%2C%20I%20need%20assistance" target="_blank" aria-label="WhatsApp Chat"><i class="fab fa-whatsapp"></i></a>
+</div>
+
+<!-- ===== SCROLL TO TOP ===== -->
+<button class="scroll-top-btn" id="scrollTopBtn" aria-label="Scroll to top"><i class="fas fa-arrow-up"></i></button>
+
+<!-- ===== AUTH MODAL ===== -->
+<div id="authModal" class="modal-overlay">
+    <div class="auth-modal">
+        <button class="close-modal" id="closeAuthModal" aria-label="Close modal">&times;</button>
+        <div class="auth-tabs">
+            <button id="loginTabBtn" class="auth-tab active">🔑 Login</button>
+            <button id="registerTabBtn" class="auth-tab">✨ Register</button>
+        </div>
+        <div id="loginForm" class="auth-form active-form">
+            <h3>Welcome Back to Helix PROMAX</h3>
+            <input type="email" id="loginEmail" placeholder="Email Address" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button id="doLogin" class="btn-primary">Sign In to Your Account</button>
+            <p>New to Helix? <a id="switchToRegister">Create a free account</a></p>
+        </div>
+        <div id="registerForm" class="auth-form">
+            <h3>Join Helix Higher Education Ecosystem</h3>
+            <input type="text" id="regName" placeholder="Full Name *" required>
+            <input type="email" id="regEmail" placeholder="Email Address *" required>
+            <input type="tel" id="regPhone" placeholder="Phone (WhatsApp) *" required>
+            <input type="password" id="regPassword" placeholder="Create Password *" required>
+            <select id="regInterest" style="width:100%;padding:13px 16px;margin:8px 0;border-radius:40px;border:2px solid #e8eef2;font-family:'Inter',sans-serif;">
+                <option value="">I'm interested in...</option><option>Medicine Delivery</option><option>Training & Courses</option><option>Research Collaboration</option><option>Chemical Manufacturing</option><option>Genomics Consulting</option>
+            </select>
+            <button id="doRegister" class="btn-primary">🚀 Register & Get Instant Access</button>
+            <p>By registering you access PharmaHub discounts & free training materials.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Weka hii KABLA ya kufunga </body> au ndani ya <head> -->
+<script src="http://localhost:5000/socket.io/socket.io.js"></script>
+
+<script>
+    // ===== PARTICLES BACKGROUND =====
+    const canvas = document.getElementById('particlesCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2.5 + 0.8;
+            this.speedX = (Math.random() - 0.5) * 0.4;
+            this.speedY = (Math.random() - 0.5) * 0.4;
+            this.opacity = Math.random() * 0.5 + 0.1;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                this.reset();
+            }
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(32,164,178,${this.opacity})`;
+            ctx.fill();
+        }
+    }
+    for (let i = 0; i < 80; i++) { particles.push(new Particle()); }
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // ===== SIDEBAR LOGIC =====
+    const sidebarPanel = document.getElementById('sidebarPanel');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebarClose = document.getElementById('sidebarClose');
+
+    function openSidebar() {
+        sidebarPanel.classList.add('open');
+        sidebarOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+        sidebarPanel.classList.remove('open');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    hamburgerBtn?.addEventListener('click', openSidebar);
+    sidebarClose?.addEventListener('click', closeSidebar);
+    sidebarOverlay?.addEventListener('click', closeSidebar);
+    document.querySelectorAll('.sidebar-link[href^="#"]').forEach(link => {
+        link.addEventListener('click', () => { closeSidebar(); });
+    });
+    document.getElementById('sidebarRegisterLink')?.addEventListener('click', (e) => {
+        e.preventDefault(); closeSidebar(); openAuthModal('register');
+    });
+    document.getElementById('sidebarLoginLink')?.addEventListener('click', (e) => {
+        e.preventDefault(); closeSidebar(); openAuthModal('login');
+    });
+    document.getElementById('sidebarCtaBtn')?.addEventListener('click', (e) => {
+        e.preventDefault(); closeSidebar(); openAuthModal('register');
+    });
+
+    // ===== TASKBAR SCROLL =====
+    const taskbar = document.getElementById('smartTaskbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 150) taskbar?.classList.add('visible');
+        else taskbar?.classList.remove('visible');
+    });
+
+    // ===== DYNAMIC WORD ROTATOR =====
+    const words = ["Genomics", "AI Chemistry", "Pharma Delivery", "Chemical Synthesis", "Nanopore Tech",
+        "Drug Discovery", "Higher Education", "Bioinformatics"
+    ];
+    let idx = 0;
+    const wordSpan = document.getElementById('dynamicWord');
+    setInterval(() => {
+        if (wordSpan) {
+            wordSpan.style.opacity = '0';
+            setTimeout(() => {
+                wordSpan.textContent = words[idx];
+                wordSpan.style.opacity = '1';
+                idx = (idx + 1) % words.length;
+            }, 150);
+        }
+    }, 2200);
+
+    // ===== TABS =====
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            tabContents.forEach(content => content.classList.remove('active-tab'));
+            document.getElementById(tabId)?.classList.add('active-tab');
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+
+    // ===== FAQ ACCORDION =====
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const wasOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+            if (!wasOpen) item.classList.add('open');
+        });
+    });
+
+    // ===== AUTH MODAL =====
+    const authModal = document.getElementById('authModal');
+    const loginTabBtn = document.getElementById('loginTabBtn');
+    const registerTabBtn = document.getElementById('registerTabBtn');
+    const loginFormDiv = document.getElementById('loginForm');
+    const registerFormDiv = document.getElementById('registerForm');
+
+    function openAuthModal(type) {
+        authModal?.classList.add('active');
+        if (type === 'register') {
+            registerTabBtn?.click();
+        } else {
+            loginTabBtn?.click();
+        }
+        document.body.style.overflow = 'hidden';
+    }
+    function closeAuthModal() {
+        authModal?.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('closeAuthModal')?.addEventListener('click', closeAuthModal);
+    document.getElementById('showAuthBtn')?.addEventListener('click', (e) => {
+        e.preventDefault(); openAuthModal('login');
+    });
+    document.getElementById('navRegisterBtn')?.addEventListener('click', (e) => {
+        e.preventDefault(); openAuthModal('register');
+    });
+    document.getElementById('navLoginBtn')?.addEventListener('click', (e) => {
+        e.preventDefault(); openAuthModal('login');
+    });
+
+    loginTabBtn?.addEventListener('click', () => {
+        loginTabBtn.classList.add('active');
+        registerTabBtn?.classList.remove('active');
+        loginFormDiv?.classList.add('active-form');
+        registerFormDiv?.classList.remove('active-form');
+    });
+    registerTabBtn?.addEventListener('click', () => {
+        registerTabBtn.classList.add('active');
+        loginTabBtn?.classList.remove('active');
+        registerFormDiv?.classList.add('active-form');
+        loginFormDiv?.classList.remove('active-form');
+    });
+    document.getElementById('switchToRegister')?.addEventListener('click', (e) => {
+        e.preventDefault(); registerTabBtn?.click();
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === authModal) closeAuthModal();
+    });
+
+    // ===== SCROLL TO TOP =====
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 500) scrollTopBtn?.classList.add('visible');
+        else scrollTopBtn?.classList.remove('visible');
+    });
+    scrollTopBtn?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ===== SEARCH =====
+    document.getElementById('searchBtn')?.addEventListener('click', () => {
+        let query = document.getElementById('globalSearch')?.value.toLowerCase() || '';
+        if (query.includes('medicine') || query.includes('amoxicillin')) window.location.href = '#marketplace';
+        else if (query.includes('training') || query.includes('course')) window.location.href = '#services';
+        else if (query.includes('nanopore')) window.location.href = '#articles';
+        else if (query.includes('faq')) window.location.href = '#faq';
+        else if (query.includes('contact')) window.location.href = '#contact';
+        else alert(`🔍 Showing results for "${query}". Contact WhatsApp +255745546056 for detailed info.`);
+    });
+    document.getElementById('globalSearch')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') document.getElementById('searchBtn')?.click();
+    });
+
+    // ===== LIVE "ONLINE NOW" SIMULATION =====
+    setInterval(() => {
+        const badge = document.querySelector('.live-badge');
+        if (badge) {
+            badge.innerHTML = '<i class="fas fa-circle"></i> ' +
+                ['24/7 Expert Support', 'Online Now', 'Live Chat Available', 'Team Ready'][Math.floor(Math.random() * 4)];
+        }
+    }, 4000);
+
+    // ==================== BACKEND API CALLS ====================
+
+    // ===== REGISTER (Live Backend) =====
+    document.getElementById('doRegister')?.addEventListener('click', async () => {
+        const fullName = document.getElementById('regName')?.value;
+        const email = document.getElementById('regEmail')?.value;
+        const phone = document.getElementById('regPhone')?.value;
+        const password = document.getElementById('regPassword')?.value;
+        const interest = document.getElementById('regInterest')?.value || '';
+
+        if (!fullName || !email || !password) {
+            alert('Tafadhali jaza angalau jina, email, na nenosiri.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fullName, email, phone, password, interest })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('helix_token', data.token);
+                alert(`🎉 Karibu ${data.user.name}! Usajili umekamilika.`);
+                closeAuthModal();
+                fetchLiveStats(); // Refresh stats after registration
+            } else {
+                alert(data.message || 'Usajili haukufanikiwa');
+            }
+        } catch (err) {
+            alert('❌ Hakuna mawasiliano na seva. Angalia kama server inaendelea.');
+        }
+    });
+
+    // ===== LOGIN (Live Backend) =====
+    document.getElementById('doLogin')?.addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail')?.value;
+        const password = document.getElementById('loginPassword')?.value;
+
+        if (!email || !password) {
+            alert('Tafadhali jaza email na nenosiri.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('helix_token', data.token);
+                alert('✅ Karibu tena! Umeingia kwa mafanikio.');
+                closeAuthModal();
+            } else {
+                alert(data.message || 'Login haikufanikiwa');
+            }
+        } catch (err) {
+            alert('❌ Hakuna mawasiliano na seva.');
+        }
+    });
+
+    // ===== CONTACT FORM (Live Backend) =====
+    document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const body = {
+            name: form.querySelector('input[placeholder*="Full Name"]')?.value || '',
+            email: form.querySelector('input[placeholder*="Email"]')?.value || '',
+            phone: form.querySelector('input[placeholder*="Phone"]')?.value || '',
+            inquiryType: form.querySelector('select')?.value || '',
+            message: form.querySelector('textarea')?.value || ''
+        };
+
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            const feedback = document.getElementById('contactFeedback');
+            if (feedback) {
+                feedback.innerHTML = '<span style="color:#25D366;">✅ ' + data.message + '</span>';
+            }
+            form.reset();
+            setTimeout(() => {
+                if (feedback) feedback.innerHTML = '';
+            }, 4000);
+        } catch (err) {
+            const feedback = document.getElementById('contactFeedback');
+            if (feedback) {
+                feedback.innerHTML = '<span style="color:red;">❌ Tuma tena baadaye.</span>';
+            }
+        }
+    });
+
+    // ===== LIVE STATS (from Backend) =====
+    function animateValue(element, start, end, duration) {
+        const range = end - start;
+        const increment = range / (duration / 16);
+        let current = start;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= end) {
+                element.innerText = end.toLocaleString() + '+';
+                clearInterval(timer);
+            } else {
+                element.innerText = Math.floor(current) + '+';
+            }
+        }, 16);
+    }
+
+    async function fetchLiveStats() {
+        try {
+            const res = await fetch('/api/stats');
+            const data = await res.json();
+            const profCard = document.querySelector('.stat-card:first-child .stat-number');
+            if (profCard) {
+                const start = parseInt(profCard.textContent.replace(/[^0-9]/g, '')) || 22000;
+                animateValue(profCard, start, data.trainedProfessionals, 1500);
+            }
+        } catch (err) {
+            console.log('Stats fetch failed, using static numbers');
+        }
+    }
+
+    // IntersectionObserver moja tu kwa stats (inachanganya counter + live fetch)
+    const statsObs = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+            // Animate static counters
+            const counters = document.querySelectorAll('.stat-number[data-target]');
+            counters.forEach(c => {
+                let target = parseInt(c.dataset.target);
+                let curr = 0;
+                let step = target / 70;
+                let upd = () => {
+                    curr += step;
+                    if (curr < target) {
+                        c.innerText = Math.floor(curr) + '+';
+                        requestAnimationFrame(upd);
+                    } else {
+                        c.innerText = target.toLocaleString() + '+';
+                    }
+                };
+                upd();
+            });
+            // Fetch live stats from backend
+            fetchLiveStats();
+        }
+    }, { threshold: 0.3 });
+
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) statsObs.observe(statsSection);
+
+    // ==================== LIVE CHAT (Socket.IO) ====================
+    const socket = io();
+
+    const openChatBtn = document.getElementById('openChatBtn');
+    const chatWindow = document.getElementById('chatWindow');
+    const chatInput = document.getElementById('chatInput');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const chatMessages = document.getElementById('chatMessages');
+    const onlineBadge = document.getElementById('onlineBadge');
+
+    // Open/Close Chat Window
+    openChatBtn?.addEventListener('click', () => {
+        if (chatWindow.style.display === 'flex') {
+            chatWindow.style.display = 'none';
+        } else {
+            chatWindow.style.display = 'flex';
+            chatInput?.focus();
+        }
+    });
+
+    // Add message to chat
+    function addMessage(user, text, isSelf = false) {
+        const msgDiv = document.createElement('div');
+        msgDiv.style.marginBottom = '8px';
+        msgDiv.style.padding = '6px 10px';
+        msgDiv.style.borderRadius = '12px';
+        msgDiv.style.background = isSelf ? '#e0f2f5' : '#f5f5f5';
+        msgDiv.innerHTML = `<strong>${user}:</strong> ${text}`;
+        if (isSelf) msgDiv.style.color = '#0B4F6C';
+        chatMessages?.appendChild(msgDiv);
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Send message
+    function sendChatMessage() {
+        const text = chatInput?.value.trim();
+        if (!text) return;
+        const user = localStorage.getItem('helix_chat_user') || 'Mgeni';
+        socket.emit('chat-message', { user, text });
+        addMessage('Mimi', text, true);
+        if (chatInput) chatInput.value = '';
+    }
+
+    sendChatBtn?.addEventListener('click', sendChatMessage);
+    chatInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+
+    // Receive messages
+    socket.on('chat-message', (data) => {
+        addMessage(data.user, data.text);
+    });
+
+    // Online user count
+    socket.on('online-count', (count) => {
+        if (onlineBadge) onlineBadge.innerHTML = `Online: ${count}`;
+    });
+
+    // Ask for chat name once
+    function promptChatName() {
+        if (!localStorage.getItem('helix_chat_user')) {
+            const name = prompt('Jina lako kwa ajili ya Live Chat:');
+            if (name) localStorage.setItem('helix_chat_user', name);
+            else localStorage.setItem('helix_chat_user', 'Mgeni');
+        }
+    }
+    promptChatName();
+
+    console.log('🚀 Helix Biosciences PROMAX – Live Platform Loaded!');
+    console.log('📌 Backend API: http://localhost:5000');
+    console.log('📡 Socket.IO Live Chat: Connected');
+</script>
+
+</body>
+</html>
