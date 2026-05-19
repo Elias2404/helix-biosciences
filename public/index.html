@@ -1987,48 +1987,53 @@
     });
 
     // ===== SEARCH =====
-    // ===== SEARCH =====
 document.getElementById('searchBtn')?.addEventListener('click', () => {
     const input = document.getElementById('globalSearch');
     if (!input) return;
     let query = input.value.toLowerCase().trim();
-    if (!query) {
-        alert('Tafadhali andika neno la kutafuta.');
-        return;
-    }
+    if (!query) return;
 
+    // Orodha kamili ya maneno na sehemu zake
     const sections = {
-        'medicine': '#marketplace',
-        'amoxicillin': '#marketplace',
-        'pharma': '#marketplace',
-        'dawa': '#marketplace',
-        'training': '#services',
-        'course': '#services',
-        'service': '#services',
-        'nanopore': '#articles',
-        'article': '#articles',
-        'faq': '#faq',
-        'maswali': '#faq',
-        'contact': '#contact',
-        'mawasiliano': '#contact',
-        'testimonial': '#testimonials',
-        'ushuhuda': '#testimonials'
+        // Dawa / PharmaHub
+        'medicine': '#marketplace', 'dawa': '#marketplace', 'pharma': '#marketplace', 'pharmahub': '#marketplace',
+        'amoxicillin': '#marketplace', 'paracetamol': '#marketplace', 'ibuprofen': '#marketplace',
+        'artemether': '#marketplace', 'antibiotic': '#marketplace', 'cough': '#marketplace',
+        'multivitamin': '#marketplace', 'ointment': '#marketplace',
+        // Huduma
+        'training': '#services', 'course': '#services', 'service': '#services', 'mafunzo': '#services',
+        'genomics': '#services', 'bioinformatics': '#services', 'chemistry': '#services',
+        // Elimu / Knowledge
+        'nanopore': '#articles', 'article': '#articles', 'insight': '#articles',
+        'faq': '#faq', 'maswali': '#faq',
+        'testimonial': '#testimonials', 'ushuhuda': '#testimonials',
+        'contact': '#contact', 'mawasiliano': '#contact'
     };
 
+    // Tafuta neno lolote linalolingana
     let found = false;
     for (const [keyword, target] of Object.entries(sections)) {
         if (query.includes(keyword)) {
-            window.location.hash = target; // Tumia hash badala ya full href
-            found = true;
-            break;
+            // Tembeza moja kwa moja bila kubadilisha URL (better UX)
+            const el = document.querySelector(target);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                found = true;
+                break;
+            }
         }
     }
 
     if (!found) {
-        alert(`🔍 Hakuna sehemu maalum ya "${query}". Tafadhali wasiliana nasi kupitia WhatsApp +255745546056.`);
+        // Utafutaji haukupata – toa ujumbe mzuri na chaguo la WhatsApp
+        const msg = `🔍 Hatukupata sehemu maalum ya "${query}".\n\nUnaweza kutafuta: dawa, mafunzo, nanoparticle, contact, faq.\n\nAu wasiliana nasi moja kwa moja WhatsApp +255 745 546 056.`;
+        alert(msg);
     }
 });
 
+document.getElementById('globalSearch')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('searchBtn')?.click();
+});
 // Pia wezesha kubonyeza Enter
 document.getElementById('globalSearch')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
