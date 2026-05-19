@@ -10,75 +10,55 @@ const contactRoutes = require('./routes/contact');
 
 const app = express();
 const server = http.createServer(app);
+const io = socketIo(server, { cors: { origin: "*" } });
 
-// Socket.IO with dynamic CORS (allows all for now, tighten in production)
-const io = socketIo(server, {
-  cors: { origin: "*" }
-});
-
-// Create MySQL connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT || 4000,
+  port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: process.env.DB_ENABLE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  connectTimeout: 10000
 });
 
-// Make pool accessible to routes
 app.set('db', pool);
-
-// Middleware
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from the 'public' folder (frontend)
 app.use(express.static(path.join(__dirname, 'public')));
-
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/contact', contactRoutes);
 
-// Health check + live stats
 app.get('/api/stats', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT COUNT(*) AS count FROM users');
     const userCount = rows[0].count;
     res.json({ trainedProfessionals: 22000 + userCount });
   } catch (err) {
-    console.error('Stats error:', err);
     res.json({ trainedProfessionals: 22000 });
   }
 });
 
-// Handle all other routes by serving index.html (for SPA-like behaviour)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Socket.IO real-time features
 let onlineUsers = 0;
 io.on('connection', (socket) => {
   onlineUsers++;
   io.emit('online-count', onlineUsers);
-
   socket.on('chat-message', (msg) => {
     io.emit('chat-message', { user: msg.user, text: msg.text, time: new Date() });
   });
-
   socket.on('disconnect', () => {
     onlineUsers--;
     io.emit('online-count', onlineUsers);
   });
 });
 
-// Create database tables if they don't exist
 async function initDB() {
   const conn = await pool.getConnection();
   try {
@@ -110,16 +90,14 @@ async function initDB() {
   }
 }
 
-// Start server after DB initialization
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 initDB()
   .then(() => {
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🌐 Open http://localhost:${PORT} to view the app`);
     });
   })
   .catch(err => {
-    console.error('❌ Failed to initialize database:', err);
+    console.error('❌ Failed to initialize DB:', err);
     process.exit(1);
   });
