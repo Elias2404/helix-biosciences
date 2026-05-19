@@ -18,17 +18,17 @@ const io = socketIo(server, {
 
 // Create MySQL connection pool
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST,
   port: process.env.DB_PORT || 4000,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASS || undefined,
-  database: process.env.DB_NAME || 'helix_pro',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: process.env.DB_ENABLE_SSL === 'true' ? {
+  ssl: {
     rejectUnauthorized: false
-  } : undefined
+  }
 });
 
 // Make pool accessible to routes
