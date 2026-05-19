@@ -1987,18 +1987,54 @@
     });
 
     // ===== SEARCH =====
-    document.getElementById('searchBtn')?.addEventListener('click', () => {
-        let query = document.getElementById('globalSearch')?.value.toLowerCase() || '';
-        if (query.includes('medicine') || query.includes('amoxicillin')) window.location.href = '#marketplace';
-        else if (query.includes('training') || query.includes('course')) window.location.href = '#services';
-        else if (query.includes('nanopore')) window.location.href = '#articles';
-        else if (query.includes('faq')) window.location.href = '#faq';
-        else if (query.includes('contact')) window.location.href = '#contact';
-        else alert(`🔍 Showing results for "${query}". Contact WhatsApp +255745546056 for detailed info.`);
-    });
-    document.getElementById('globalSearch')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') document.getElementById('searchBtn')?.click();
-    });
+    // ===== SEARCH =====
+document.getElementById('searchBtn')?.addEventListener('click', () => {
+    const input = document.getElementById('globalSearch');
+    if (!input) return;
+    let query = input.value.toLowerCase().trim();
+    if (!query) {
+        alert('Tafadhali andika neno la kutafuta.');
+        return;
+    }
+
+    const sections = {
+        'medicine': '#marketplace',
+        'amoxicillin': '#marketplace',
+        'pharma': '#marketplace',
+        'dawa': '#marketplace',
+        'training': '#services',
+        'course': '#services',
+        'service': '#services',
+        'nanopore': '#articles',
+        'article': '#articles',
+        'faq': '#faq',
+        'maswali': '#faq',
+        'contact': '#contact',
+        'mawasiliano': '#contact',
+        'testimonial': '#testimonials',
+        'ushuhuda': '#testimonials'
+    };
+
+    let found = false;
+    for (const [keyword, target] of Object.entries(sections)) {
+        if (query.includes(keyword)) {
+            window.location.hash = target; // Tumia hash badala ya full href
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        alert(`🔍 Hakuna sehemu maalum ya "${query}". Tafadhali wasiliana nasi kupitia WhatsApp +255745546056.`);
+    }
+});
+
+// Pia wezesha kubonyeza Enter
+document.getElementById('globalSearch')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        document.getElementById('searchBtn')?.click();
+    }
+});
 
     // ===== LIVE "ONLINE NOW" SIMULATION =====
     setInterval(() => {
