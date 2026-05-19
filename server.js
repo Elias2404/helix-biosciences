@@ -19,12 +19,16 @@ const io = socketIo(server, {
 // Create MySQL connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 4000,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASS || undefined,
   database: process.env.DB_NAME || 'helix_pro',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: process.env.DB_ENABLE_SSL === 'true' ? {
+    rejectUnauthorized: false
+  } : undefined
 });
 
 // Make pool accessible to routes
@@ -107,7 +111,7 @@ async function initDB() {
 }
 
 // Start server after DB initialization
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 initDB()
   .then(() => {
     server.listen(PORT, () => {
